@@ -164,14 +164,17 @@ namespace DJI_FileImporter
                 String panoramaFolderName = ConfigurationManager.AppSettings["panoramaFolderName"];
                 sourceFolderPath = Path.Combine(sourceFolderPath, panoramaFolderName);
 
-                Console.WriteLine($"Deleting all panoramas in {sourceFolderPath}");
-
-                foreach (String folder in Directory.GetDirectories(sourceFolderPath))
+                if (Program.IsFolderExist(sourceFolderPath))
                 {
-                    Directory.Delete(folder, true);
-                }
+                    Console.WriteLine($"Deleting all panoramas in {sourceFolderPath}");
 
-                Console.WriteLine("Deleting finished\n");
+                    foreach (String folder in Directory.GetDirectories(sourceFolderPath))
+                    {
+                        Directory.Delete(folder, true);
+                    }
+
+                    Console.WriteLine("Deleting finished\n");
+                }
             }
         }
 
@@ -242,12 +245,20 @@ namespace DJI_FileImporter
             {
                 String panoramaFolderName = ConfigurationManager.AppSettings["panoramaFolderName"];
                 sourcePath = Path.Combine(sourcePath, panoramaFolderName);
-                Int32 copiedFoldersCount = 0;
-                Program.CopyDirectory(sourcePath, destinationPath, ref copiedFoldersCount);
 
-                Console.WriteLine("Copy of Media files finished");
-                Console.WriteLine($"{Directory.GetDirectories(sourcePath).Count()} were processed");
-                Console.WriteLine($"{copiedFoldersCount} folders were copied in {destinationPath}\n");
+                if (Program.IsFolderExist(sourcePath))
+                {
+                    Int32 copiedFoldersCount = 0;
+                    Program.CopyDirectory(sourcePath, destinationPath, ref copiedFoldersCount);
+
+                    Console.WriteLine("Copy of Panoramas files finished");
+                    Console.WriteLine($"{Directory.GetDirectories(sourcePath).Count()} were processed");
+                    Console.WriteLine($"{copiedFoldersCount} folders were copied in {destinationPath}\n");
+                }
+                else
+                {
+                    Console.WriteLine($"Folder {sourcePath} can't be found.");
+                }
             }
         }
 
