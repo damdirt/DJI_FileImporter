@@ -53,6 +53,9 @@ namespace DJI_FileImporter
             //Deleting Panoramas
             Program.DeletePanoramas(deleteAllFiles, hasToImportPanoramas, sourceFolderPath);
 
+            //Deleting Timelapse Photos
+            Program.DeleteTimelapsePhotos(deleteAllFiles, hasToImportTimelapsePhotos, sourceFolderPath);
+
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
         }
@@ -203,6 +206,27 @@ namespace DJI_FileImporter
                 if (Program.IsFolderExist(sourceFolderPath))
                 {
                     Console.WriteLine($"Deleting all panoramas in {sourceFolderPath}");
+
+                    foreach (String folder in Directory.GetDirectories(sourceFolderPath))
+                    {
+                        Directory.Delete(folder, true);
+                    }
+
+                    Console.WriteLine("Deleting finished\n");
+                }
+            }
+        }
+
+        private static void DeleteTimelapsePhotos(Boolean deleteAllFiles, Boolean hasToImportTimelapsePhotos, String sourceFolderPath)
+        {
+            if (deleteAllFiles && hasToImportTimelapsePhotos)
+            {
+                String timelapsePhotosFolderName = ConfigurationManager.AppSettings["timelapsePhotoFolderName"];
+                sourceFolderPath = Path.Combine(sourceFolderPath, timelapsePhotosFolderName);
+
+                if (Program.IsFolderExist(sourceFolderPath))
+                {
+                    Console.WriteLine($"Deleting all Timelapse photos in {sourceFolderPath}");
 
                     foreach (String folder in Directory.GetDirectories(sourceFolderPath))
                     {
