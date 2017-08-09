@@ -11,8 +11,8 @@ namespace DJI_FileImporter
         static void Main(String[] args)
         {
             Console.WriteLine($"Welcome to DJI files importer\n");
-            String sourceFolderPath, destinationFolderPath, panoramasDestinationFolderPath;
-            sourceFolderPath = destinationFolderPath = panoramasDestinationFolderPath = String.Empty;
+            String sourceFolderPath, destinationFolderPath, panoramasDestinationFolderPath, timelapsePhotosDestinationFolderPath;
+            sourceFolderPath = destinationFolderPath = panoramasDestinationFolderPath = timelapsePhotosDestinationFolderPath = String.Empty;
 
             var defaultSourceFolderPath = ConfigurationManager.AppSettings["defaultSourcePath"];
             var defaultDestinationFolderPath = ConfigurationManager.AppSettings["defaultDestinationPath"];
@@ -27,6 +27,10 @@ namespace DJI_FileImporter
             Boolean hasToImportPanoramas = false;
             Program.AskForPanoramaImport(defaultDestinationFolderPath, ref panoramasDestinationFolderPath, ref hasToImportPanoramas);
 
+            // Asking for importing Photo Timelapses
+            Boolean hasToImportTimelapsePhotos = false;
+            Program.AskForPhotoTimelapseImport(defaultDestinationFolderPath, ref timelapsePhotosDestinationFolderPath, ref hasToImportTimelapsePhotos);
+
             // Asking for deleting files after copy
             Boolean deleteAllFiles = false;
             Program.HasToDeleteSourceFilesAfterCopy(sourceFolderPath, ref deleteAllFiles);
@@ -39,6 +43,9 @@ namespace DJI_FileImporter
 
             // Copying Panoramas
             Program.CopyPanoramas(hasToImportPanoramas, defaultSourceFolderPath, panoramasDestinationFolderPath);
+
+            // Copying Timelapses
+            Program.CopyTimelapsePhotos(hasToImportTimelapsePhotos, defaultSourceFolderPath, timelapsePhotosDestinationFolderPath);
 
             // Deleting files
             Program.DeleteFiles(files, deleteAllFiles, sourceFolderPath);
@@ -104,6 +111,35 @@ namespace DJI_FileImporter
                     }
                 } while (!Program.IsFolderExist(panoramasDestinationFolderPath));
                 Console.WriteLine($"Destination path: {panoramasDestinationFolderPath}");
+            }
+
+            Console.WriteLine();
+        }
+
+        private static void AskForPhotoTimelapseImport(String defaultDestinationFolderPath, ref String timelapsePhotosDestinationFolderPath, ref Boolean hasToImportTimelapsePhotos)
+        {
+            var timelapsePhotosFolderName = ConfigurationManager.AppSettings["timelapsePhotoFolderName"];
+            defaultDestinationFolderPath = Path.Combine(defaultDestinationFolderPath, timelapsePhotosFolderName);
+
+            Console.Write($"Import Timelapses Photos to {defaultDestinationFolderPath} (Y/N) ? ");
+
+            String hasToImportTimelapsePhotosUserEntry = String.Empty;
+
+            hasToImportTimelapsePhotosUserEntry = Console.ReadLine();
+            hasToImportTimelapsePhotos = String.IsNullOrEmpty(hasToImportTimelapsePhotosUserEntry) || String.Equals(hasToImportTimelapsePhotosUserEntry, "Y", StringComparison.OrdinalIgnoreCase);
+
+            if (hasToImportTimelapsePhotos)
+            {
+                do
+                {
+                    Console.Write($@"Enter timelapse photos destination folder (default is '{defaultDestinationFolderPath}'): ");
+                    timelapsePhotosDestinationFolderPath = Console.ReadLine();
+                    if (String.IsNullOrEmpty(timelapsePhotosDestinationFolderPath))
+                    {
+                        timelapsePhotosDestinationFolderPath = defaultDestinationFolderPath;
+                    }
+                } while (!Program.IsFolderExist(timelapsePhotosDestinationFolderPath));
+                Console.WriteLine($"Destination path: {timelapsePhotosDestinationFolderPath}");
             }
 
             Console.WriteLine();
@@ -252,6 +288,29 @@ namespace DJI_FileImporter
                     Program.CopyDirectory(sourcePath, destinationPath, ref copiedFoldersCount);
 
                     Console.WriteLine("Copy of Panoramas files finished");
+                    Console.WriteLine($"{Directory.GetDirectories(sourcePath).Count()} were processed");
+                    Console.WriteLine($"{copiedFoldersCount} folders were copied in {destinationPath}\n");
+                }
+                else
+                {
+                    Console.WriteLine($"Folder {sourcePath} can't be found.");
+                }
+            }
+        }
+
+        internal static void CopyTimelapsePhotos(Boolean hasToImportTimelapsePhotos, String sourcePath, String destinationPath)
+        {
+            if (hasToImportTimelapsePhotos)
+            {
+                String photoTimelapseFolderName = ConfigurationManager.AppSettings["timelapsePhotoFolderName"];
+                sourcePath = Path.Combine(sourcePath, photoTimelapseFolderName);
+
+                if (Program.IsFolderExist(sourcePath))
+                {
+                    Int32 copiedFoldersCount = 0;
+                    Program.CopyDirectory(sourcePath, destinationPath, ref copiedFoldersCount);
+
+                    Console.WriteLine("Copy of Timelapses Photos files finished");
                     Console.WriteLine($"{Directory.GetDirectories(sourcePath).Count()} were processed");
                     Console.WriteLine($"{copiedFoldersCount} folders were copied in {destinationPath}\n");
                 }
